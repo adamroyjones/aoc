@@ -1,6 +1,6 @@
 * 2023
 This directory contains some attempts at solutions to the 2023 Advent of Code
-problems. I chose Janet as my language of choice.
+problems. I chose Janet (v1.32.1) as my language of choice.
 
 ** Why Janet?
 I don't yet know the language, but it has some appealing properties.
@@ -8,6 +8,7 @@ I don't yet know the language, but it has some appealing properties.
 - It can be compiled and distributed.
 - It has a minimal startup time.
 - It can be embedded.
+- It's small.
 - It's ergonomic (e.g., it comes with threading macros).
 - It has built-in support for parsing expression grammars.
 - Some lovely people created [[https://github.com/andrewchambers/janetsh][sh]] and [[https://github.com/ianthehenry/cmd][cmd]].
