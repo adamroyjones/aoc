@@ -1,0 +1,2 @@
+* aoc
+This repository contains some attempts at solutions to Advent of Code problems.
