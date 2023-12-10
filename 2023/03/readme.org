@@ -10,6 +10,8 @@ jpm --local janet part-2.janet
 #+end_src
 
 ** Question
+The question as given is as follows.
+
 #+begin_quote
 --- Day 3: Gear Ratios ---
 
