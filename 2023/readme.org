@@ -28,5 +28,5 @@ and parsing expression grammars are revelatory---but a language's usefulness is
 limited by its tooling and its documentation. These are lacking in Janet, at
 least for now.
 
-It's also confirmed that I'm intolerant of the kinds of errors that dynamic
-typing produces.
+I also realise how much I rely on value semantics and how intolerant I am of the
+kinds of errors that dynamic typing produces.
