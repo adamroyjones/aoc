@@ -22,11 +22,11 @@ I'll update this when I feel I'm done with this experiment.
 ** Conclusions
 I chose to switch to Go, my working language, when working on day 5.
 
-I like the compactness of Janet, I like the left-to-write style that threading
+I like the compactness of Janet, I like the left-to-right style that threading
 macros provide, I like being able to place my tests next to my code with [[https://github.com/ianthehenry/judge][judge]],
-and parsing expression grammars are revelatory, but a language's usefulness is
-limited by its tooling and its documentation. These are lacking in Janet—at
+and parsing expression grammars are revelatory---but a language's usefulness is
+limited by its tooling and its documentation. These are lacking in Janet, at
 least for now.
 
-It's also calcified in me that I'm intolerant of the kinds of errors that
-dynamic typing produces.
+It's also confirmed that I'm intolerant of the kinds of errors that dynamic
+typing produces.
