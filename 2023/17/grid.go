@@ -28,16 +28,16 @@ func newGrid(s string) *grid {
 	return &gryd
 }
 
-func (gryd *grid) graph() *graph {
+func (gryd *grid) graph(minSegmentLength, maxSegmentLength int) *graph {
 	assert(gryd != nil, "the grid must be non-nil")
 	assert(len(*gryd) > 0 && len((*gryd)[0]) > 0, "the grid must be be non-empty")
 
-	graf := newGraph(gryd)
+	graf := newGraph(gryd, minSegmentLength, maxSegmentLength)
 	currentNodes := []*node{graf.root}
 	for len(currentNodes) > 0 {
 		nextNodes := []*node{}
 		for _, currentNode := range currentNodes {
-			nextNextNodes := graf.nextNodes(currentNode)
+			nextNextNodes := graf.neighbours(currentNode)
 			nextNextNodes = slices.DeleteFunc(nextNextNodes, func(n *node) bool {
 				l := n.label()
 				graf.addEdge(currentNode, n)

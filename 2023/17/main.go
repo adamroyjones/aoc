@@ -9,22 +9,34 @@ import (
 	"strings"
 )
 
+const (
+	partOneMin, partOneMax = 1, 4
+	partTwoMin, partTwoMax = 5, 11
+)
+
 // This uses graphviz to produce a visualisation.
 func main() {
-	filename := "integration-part-1-dot"
+	filename := "testdata/integration-part-1-dot"
 	bs, err := os.ReadFile(filename)
 	assert(err == nil, "unable to read a file")
 	g := newGrid(string(bs))
-	graf := g.graph()
+	graf := g.graph(partOneMin, partOneMax)
 	renderDot(graf.String())
 	fmt.Println(graf.shortestPath())
+}
+
+func partTwo(filename string) int {
+	bs, err := os.ReadFile(filename)
+	assert(err == nil, "unable to read a file")
+	g := newGrid(string(bs))
+	return g.graph(partTwoMin, partTwoMax).shortestPath()
 }
 
 func partOne(filename string) int {
 	bs, err := os.ReadFile(filename)
 	assert(err == nil, "unable to read a file")
 	g := newGrid(string(bs))
-	return g.graph().shortestPath()
+	return g.graph(partOneMin, partOneMax).shortestPath()
 }
 
 func renderDot(dot string) {

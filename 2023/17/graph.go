@@ -15,15 +15,21 @@ type graph struct {
 	gryd        *grid
 	labelToNode map[string]*node
 	root        *node
+
+	minSegmentLength int
+	maxSegmentLength int
 }
 
-func newGraph(g *grid) *graph {
+func newGraph(g *grid, minSegmentLength, maxSegmentLength int) *graph {
 	assert(g != nil, "the grid must not be nil")
-	root := node{data: []pair{{i: 0, j: 0}}}
+	assert(maxSegmentLength > minSegmentLength && minSegmentLength > 0, "the segment lengths are inconsistent")
+	root := node{segment: []pair{{i: 0, j: 0}}}
 	return &graph{
-		gryd:        g,
-		labelToNode: map[string]*node{root.label(): &root},
-		root:        &root,
+		gryd:             g,
+		labelToNode:      map[string]*node{root.label(): &root},
+		root:             &root,
+		minSegmentLength: minSegmentLength,
+		maxSegmentLength: maxSegmentLength,
 	}
 }
 
@@ -31,151 +37,118 @@ func (graf graph) dims() (int, int) { i, j := graf.gryd.dims(); return i, j }
 
 func (graf graph) weight(n *node) int {
 	assert(n != nil, "the node must not be nil")
-	assert(len(n.data) > 0, "there must be at least one datum")
-	lastPair := n.data[len(n.data)-1]
-
+	assert(len(n.segment) > 0, "there must be at least one datum")
 	assert(graf.gryd != nil, "the grid must not be nil")
-	assert(len(*graf.gryd) > lastPair.i, "the grid must accommodate the pair (pair: %v, node: %s)", lastPair, n.label())
-	assert(len((*graf.gryd)[lastPair.i]) > lastPair.j, "the grid must accommodate the pair (pair: %v, node: %s)", lastPair, n.label())
-	return int((*graf.gryd)[lastPair.i][lastPair.j])
+	assert(len(*graf.gryd) > n.head().i, "the grid must accommodate the pair (pair: %v, node: %s)", n.head(), n.label())
+	assert(len((*graf.gryd)[n.head().i]) > n.head().j, "the grid must accommodate the pair (pair: %v, node: %s)", n.head(), n.label())
+	return int((*graf.gryd)[n.head().i][n.head().j])
 }
 
 func (graf *graph) addEdge(currentNode, nextNode *node) {
 	assert(currentNode != nil && nextNode != nil, "neither node may be nil")
-	assert(len(nextNode.data) > 0, "there must be at least one datum")
+	assert(len(nextNode.segment) > 0, "there must be at least one datum")
 	if currentNode.edges == nil {
 		currentNode.edges = make(map[string]*node)
 	}
 	currentNode.edges[nextNode.label()] = nextNode
 }
 
-func (graf *graph) getNeighbours(p pair) (up, left, down, right *node) {
-	if p.i > 0 {
-		up = &node{data: []pair{p, {i: p.i - 1, j: p.j}}}
-	}
-	if p.j > 0 {
-		left = &node{data: []pair{p, {i: p.i, j: p.j - 1}}}
-	}
-	if imax, _ := graf.dims(); p.i < imax-1 {
-		down = &node{data: []pair{p, {i: p.i + 1, j: p.j}}}
-	}
-	if _, jmax := graf.dims(); p.j < jmax-1 {
-		right = &node{data: []pair{p, {i: p.i, j: p.j + 1}}}
-	}
-	return
-}
-
-func (graf *graph) nextNodes(n *node) []*node {
-	assert(len(n.data) > 0, "at least one datum must be present")
+func (graf *graph) neighbours(n *node) []*node {
+	assert(len(n.segment) > 0, "at least one datum must be present")
 	assert(graf != nil, "the graph must not be nil")
 	assert(graf.gryd != nil, "the grid must not be nil")
 
-	head := n.data[len(n.data)-1]
-	up, left, down, right := graf.getNeighbours(head)
-
-	switch len(n.data) {
-	case 1:
-		if n.label() == graf.terminalNodeLabel() {
-			return []*node{}
-		}
-
-		assert(head.i == 0 && head.j == 0, "this must be the originating node")
-		_, _, down, right := graf.getNeighbours(head)
-		return compact(down, right)
-
-	case 2:
-		// It's always shorter to jump to the end when you're a neighbour of it.
-		if (head.i == len(*graf.gryd)-1 && head.j == len((*graf.gryd)[0])-2) || (head.i == len(*graf.gryd)-2 && head.j == len((*graf.gryd)[0])-1) {
-			i, j := len(*graf.gryd)-1, len((*graf.gryd)[0])-1
-			return []*node{{data: []pair{{i: i, j: j}}}}
-		}
-
-		switch d := n.data[0].direction(head); d {
-		case DIRECTION_U:
-			if up != nil {
-				up.data = safeappend(n.data[:1], up.data...)
-			}
-			return compact(up, left, right)
-		case DIRECTION_L:
-			if left != nil {
-				left.data = safeappend(n.data[:1], left.data...)
-			}
-			return compact(left, down, up)
-		case DIRECTION_D:
-			if down != nil {
-				down.data = safeappend(n.data[:1], down.data...)
-			}
-			return compact(down, left, right)
-		case DIRECTION_R:
-			if right != nil {
-				right.data = safeappend(n.data[:1], right.data...)
-			}
-			return compact(right, up, down)
-		default:
-			panic("unexpected direction")
-		}
-
-	case 3:
-		// It's always shorter to jump to the end when you're a neighbour of it.
-		if (head.i == len(*graf.gryd)-1 && head.j == len((*graf.gryd)[0])-2) || (head.i == len(*graf.gryd)-2 && head.j == len((*graf.gryd)[0])-1) {
-			i, j := len(*graf.gryd)-1, len((*graf.gryd)[0])-1
-			return []*node{{data: []pair{{i: i, j: j}}}}
-		}
-
-		switch d := n.data[1].direction(head); d {
-		case DIRECTION_U:
-			if up != nil {
-				up.data = safeappend(n.data[:2], up.data...)
-			}
-			return compact(up, left, right)
-		case DIRECTION_L:
-			if left != nil {
-				left.data = safeappend(n.data[:2], left.data...)
-			}
-			return compact(up, left, down)
-		case DIRECTION_D:
-			if down != nil {
-				down.data = safeappend(n.data[:2], down.data...)
-			}
-			return compact(left, down, right)
-		case DIRECTION_R:
-			if right != nil {
-				right.data = safeappend(n.data[:2], right.data...)
-			}
-			return compact(up, down, right)
-		default:
-			panic("unexpected direction")
-		}
-
-	case 4:
-		// We have to change direction.
-		switch d := n.data[1].direction(head); d {
-		case DIRECTION_U:
-			return compact(left, right)
-		case DIRECTION_L:
-			return compact(up, down)
-		case DIRECTION_D:
-			// It's always shorter to jump to the end when you're a neighbour of it.
-			if head.i == len(*graf.gryd)-1 && head.j == len((*graf.gryd)[0])-2 {
-				return []*node{{data: []pair{{i: len(*graf.gryd) - 1, j: len((*graf.gryd)[0]) - 1}}}}
-			}
-			return compact(left, right)
-		case DIRECTION_R:
-			// It's always shorter to jump to the end when you're a neighbour of it.
-			if head.i == len(*graf.gryd)-2 && head.j == len((*graf.gryd)[0])-1 {
-				return []*node{{data: []pair{{i: len(*graf.gryd) - 1, j: len((*graf.gryd)[0]) - 1}}}}
-			}
-			return compact(up, down)
-
-		default:
-			panic("unexpected direction")
-		}
-
-	default:
-		assert(false, "n.data must have fewer than 3 elements (n.data = %v)", n.data)
+	if graf.isTerminal(n) {
+		return []*node{}
 	}
 
-	panic("unreachable")
+	return compact(
+		graf.neighbour(n, DIRECTION_U),
+		graf.neighbour(n, DIRECTION_L),
+		graf.neighbour(n, DIRECTION_D),
+		graf.neighbour(n, DIRECTION_R),
+	)
+}
+
+func (graf *graph) neighbour(n *node, dir direction) *node {
+	assert(n != nil, "the node must be non-nil")
+
+	var loc pair
+	switch dir {
+	case DIRECTION_U:
+		loc = pair{i: n.head().i - 1, j: n.head().j}
+	case DIRECTION_L:
+		loc = pair{i: n.head().i, j: n.head().j - 1}
+	case DIRECTION_D:
+		loc = pair{i: n.head().i + 1, j: n.head().j}
+	case DIRECTION_R:
+		loc = pair{i: n.head().i, j: n.head().j + 1}
+	default:
+		panic("unexpected direction")
+	}
+	candidate := &node{segment: safeappend(n.segment, loc)}
+
+	// Are we in the grid?
+	imax, jmax := graf.dims()
+	if candidate.head().i < 0 || candidate.head().i >= imax {
+		return nil
+	}
+	if candidate.head().j < 0 || candidate.head().j >= jmax {
+		return nil
+	}
+
+	// Are we beginning a segment?
+	if len(candidate.segment) == 2 {
+		return candidate
+	}
+
+	// Given the above, we've a non-trivial segment. We need to examine the
+	// direction of travel.
+	//
+	// Are we travelling in the opposite direction?
+	neck := candidate.segment[len(candidate.segment)-2]
+	if candidate.tail().direction(neck).opposite() == neck.direction(candidate.head()) {
+		return nil
+	}
+
+	// Are we continuing in the same direction?
+	if candidate.tail().direction(neck) == neck.direction(candidate.head()) {
+		if len(candidate.segment) > graf.maxSegmentLength {
+			return nil
+		}
+
+		// Are we at the end of the path...
+		if candidate.head().i == imax-1 && candidate.head().j == jmax-1 {
+			// ...and within the allowed limit?
+			if len(candidate.segment) < graf.minSegmentLength {
+				return nil
+			}
+
+			candidate.segment = []pair{candidate.head()}
+			return candidate
+		}
+
+		return candidate
+	}
+
+	// We've turned—but are we allowed to? Note that we need -1 here to exclude
+	// the head.
+	if len(candidate.segment)-1 < graf.minSegmentLength {
+		return nil
+	}
+
+	// Are we at the end of the path? If so, we can only include this if the
+	// minimum segment length is 1, as we've just turned.
+	if candidate.head().i == imax-1 && candidate.head().j == jmax-1 && graf.minSegmentLength == 1 {
+		candidate.segment = []pair{candidate.head()}
+		return candidate
+	}
+
+	// Finally: we've turned, we're allowed to, we're not at the end, but now we
+	// need to now fix up the history to erase the section of the segment befoer
+	// the turn.
+	candidate.segment = candidate.segment[len(candidate.segment)-2:]
+	return candidate
 }
 
 // shortestPath uses Dijkstra's algorithm with a priority queue to find the
@@ -212,6 +185,12 @@ func (graf *graph) shortestPath() int {
 	}
 
 	return labelToPQI[graf.terminalNodeLabel()].distance
+}
+
+func (graf graph) isTerminal(n *node) bool {
+	assert(n != nil, "the node must not be nil")
+	imax, jmax := graf.dims()
+	return len(n.segment) == 1 && n.head().i == imax-1 && n.head().j == jmax-1
 }
 
 func (graf graph) terminalNodeLabel() string {
