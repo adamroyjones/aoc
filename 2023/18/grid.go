@@ -5,12 +5,10 @@ import (
 )
 
 type grid struct {
-	cells      cells
+	cells      [][]cell
 	imin, jmin int // Inclusive.
 	imax, jmax int // Exclusive.
 }
-
-type cells [][]cell
 
 type cell struct {
 	cellTyp cellType
@@ -24,49 +22,12 @@ const (
 	CELL_TRENCH
 )
 
-type pipeType int
-
-const (
-	PIPE_EMPTY pipeType = iota
-	PIPE_STRAIGHT_UD
-	PIPE_STRAIGHT_LR
-	PIPE_BEND_UL
-	PIPE_BEND_DL
-	PIPE_BEND_DR
-	PIPE_BEND_UR
-)
-
-func (pt pipeType) String() string {
-	switch pt {
-	case PIPE_EMPTY:
-		return "."
-	case PIPE_STRAIGHT_UD:
-		return "|"
-	case PIPE_STRAIGHT_LR:
-		return "-"
-	case PIPE_BEND_UL:
-		return "╭"
-	case PIPE_BEND_DL:
-		return "╰"
-	case PIPE_BEND_DR:
-		return "╯"
-	case PIPE_BEND_UR:
-		return "╮"
-	default:
-		panic("unexpected pipe type")
-	}
-}
-
 func newGrid(insts instructions) *grid {
-	// Initialise an empty grid.
 	assert(len(insts) > 0)
 	ul, br := insts.dims()
-	grydCells := make(cells, br.i-ul.i)
+	grydCells := make([][]cell, br.i-ul.i)
 	for i := range grydCells {
-		grydCells[i] = make([]cell, br.j-ul.j)
-		for j := range grydCells[i] {
-			grydCells[i][j] = cell{cellTyp: CELL_EMPTY}
-		}
+		grydCells[i] = repeat(cell{cellTyp: CELL_EMPTY}, br.j-ul.j)
 	}
 	gryd := &grid{cells: grydCells, imin: ul.i, jmin: ul.j, imax: br.i, jmax: br.j}
 
@@ -76,14 +37,15 @@ func newGrid(insts instructions) *grid {
 	for _, inst := range insts {
 		prevDirection, position = gryd.step(prevDirection, position, inst)
 	}
-	gryd.fixOrigin(prevDirection, insts[0].dir)
+
+	// We need to fix the origin; the origin's pipe type can only be known at the end of the traversal.
+	assert(prevDirection != nil)
+	gryd.cells[-gryd.imin][-gryd.jmin].pipeTyp = prevDirection.pipeType(insts[0].dir)
 
 	return gryd
 }
 
-func (gryd grid) area() int {
-	return gryd.boundaryArea() + gryd.boundedArea()
-}
+func (gryd grid) area() int { return gryd.boundaryArea() + gryd.boundedArea() }
 
 func (gryd grid) boundaryArea() int {
 	area := 0
@@ -98,16 +60,17 @@ func (gryd grid) boundaryArea() int {
 }
 
 func (gryd grid) boundedArea() int {
-	a := 0
+	area := 0
 	for _, grydLine := range gryd.cells {
-		a += areaOnLine(grydLine)
+		area += gryd.areaOnLine(grydLine)
 	}
-	return a
+	return area
 }
 
-func areaOnLine(grydLine []cell) int {
+func (gryd grid) areaOnLine(grydLine []cell) int {
 	outside := true
 	area := 0
+
 	var prevBend *pipeType
 	for _, cell := range grydLine {
 		switch cell.pipeTyp {
@@ -147,10 +110,9 @@ func areaOnLine(grydLine []cell) int {
 	return area
 }
 
-// step takes a Cartesian point (pos) and an instruction and executes the
-// instruction, returning a new Cartesian point. Note that pos may have negative
-// components; these MUST be mapped appropriately by step to produce appropriate
-// slice indices.
+// step takes a point and an instruction and executes the instruction, returning
+// a new Cartesian point. The point MUST be remapped appropriately by this
+// method to produce appropriate slice indices.
 func (gryd *grid) step(prevDirection *direction, pos pair, inst instruction) (*direction, pair) {
 	arrayI, arrayJ := pos.i-gryd.imin, pos.j-gryd.jmin
 	nextPos := pos
@@ -160,33 +122,25 @@ func (gryd *grid) step(prevDirection *direction, pos pair, inst instruction) (*d
 	case DIRECTION_U:
 		for i := 1; i <= inst.dist; i++ {
 			gryd.cells[arrayI-i][arrayJ].cellTyp = CELL_TRENCH
-			if i < inst.dist {
-				gryd.cells[arrayI-i][arrayJ].pipeTyp = directionToPipeType(inst.dir)
-			}
+			gryd.cells[arrayI-i][arrayJ].pipeTyp = directionToPipeType(inst.dir)
 		}
 		nextPos.i -= inst.dist
 	case DIRECTION_L:
 		for j := 1; j <= inst.dist; j++ {
 			gryd.cells[arrayI][arrayJ-j].cellTyp = CELL_TRENCH
-			if j < inst.dist {
-				gryd.cells[arrayI][arrayJ-j].pipeTyp = directionToPipeType(inst.dir)
-			}
+			gryd.cells[arrayI][arrayJ-j].pipeTyp = directionToPipeType(inst.dir)
 		}
 		nextPos.j -= inst.dist
 	case DIRECTION_D:
 		for i := 1; i <= inst.dist; i++ {
 			gryd.cells[arrayI+i][arrayJ].cellTyp = CELL_TRENCH
-			if i < inst.dist {
-				gryd.cells[arrayI+i][arrayJ].pipeTyp = directionToPipeType(inst.dir)
-			}
+			gryd.cells[arrayI+i][arrayJ].pipeTyp = directionToPipeType(inst.dir)
 		}
 		nextPos.i += inst.dist
 	case DIRECTION_R:
 		for j := 1; j <= inst.dist; j++ {
 			gryd.cells[arrayI][arrayJ+j].cellTyp = CELL_TRENCH
-			if j < inst.dist {
-				gryd.cells[arrayI][arrayJ+j].pipeTyp = directionToPipeType(inst.dir)
-			}
+			gryd.cells[arrayI][arrayJ+j].pipeTyp = directionToPipeType(inst.dir)
 		}
 		nextPos.j += inst.dist
 	default:
@@ -197,15 +151,6 @@ func (gryd *grid) step(prevDirection *direction, pos pair, inst instruction) (*d
 	assert(nextPos.j >= gryd.jmin && nextPos.j < gryd.jmax)
 	return &inst.dir, nextPos
 }
-
-// fixOrigin is required as the pipe type of the origin can only be properly
-// known at the end.
-func (gryd *grid) fixOrigin(prevDirection *direction, originDir direction) {
-	assert(prevDirection != nil)
-	gryd.cells[-gryd.imin][-gryd.jmin].pipeTyp = directionsToPipeType(prevDirection, originDir)
-}
-
-func (gryd grid) String() string { return gryd.trenchString() }
 
 func (gryd grid) trenchString() string {
 	var sb strings.Builder
@@ -237,5 +182,26 @@ func (c cellType) String() string {
 		return "#"
 	default:
 		panic("unexpected cell")
+	}
+}
+
+func (pt pipeType) String() string {
+	switch pt {
+	case PIPE_EMPTY:
+		return "."
+	case PIPE_STRAIGHT_UD:
+		return "|"
+	case PIPE_STRAIGHT_LR:
+		return "-"
+	case PIPE_BEND_UL:
+		return "╭"
+	case PIPE_BEND_DL:
+		return "╰"
+	case PIPE_BEND_DR:
+		return "╯"
+	case PIPE_BEND_UR:
+		return "╮"
+	default:
+		panic("unexpected pipe type")
 	}
 }
