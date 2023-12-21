@@ -4,16 +4,16 @@ This assumes that Go v1.21.5 has been installed.
 
 #+begin_src sh
 go test ./...
-#+end_src>
+#+end_src
 
 ** Approach
-Part one adapts the trivial form of Fubini's theorem that I used in [[../10/readme.org][part 10]].
+Part one adapts the trivial forms of Fubini's theorem and the Jordan curve
+theorem that I used in [[../10/readme.org][part 10]].
 
-For part two, the previous approach is intractable as there are far too many
-slices. I instead switched to constructing a quadrangulation of the region
-and summing the areas of the quadrangles. This involved creating a sparse
-representation of the region: that is, to represent it through its vertices, its
-directions, etc.
+For part two, that approach is intractable as there are far too many slices. I
+instead switched to constructing a quadrangulation of the region and summing the
+areas of the quadrangles. This involved creating a sparse(r) representation of
+the region.
 
 ** Question
 The question as given is as follows.
@@ -57,7 +57,7 @@ hexadecimal color code.
 When viewed from above, the above example dig plan would result in the following
 loop of trench (#) having been dug out from otherwise ground-level terrain (.):
 
-#+begin_quote
+#+begin_src
 #######
 #.....#
 ###...#
@@ -68,13 +68,13 @@ loop of trench (#) having been dug out from otherwise ground-level terrain (.):
 ##..###
 .#....#
 .######
-#+end_quote
+#+end_src
 
 At this point, the trench could contain 38 cubic meters of lava. However, this
 is just the edge of the lagoon; the next step is to dig out the interior so that
 it is one meter deep as well:
 
-#+begin_quote
+#+begin_src
 #######
 #######
 #######
@@ -85,7 +85,7 @@ it is one meter deep as well:
 #######
 .######
 .######
-#+end_quote
+#+end_src
 
 Now, the lagoon can contain a much more respectable 62 cubic meters of
 lava. While the interior is dug out, the edges are also painted according to the
