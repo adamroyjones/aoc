@@ -5,31 +5,29 @@ import (
 	"testing"
 )
 
-func TestPartTwo(t *testing.T) {
-	for _, tc := range []struct {
-		filename string
-		exp      int
-	}{
-		{filename: "integration-part-2", exp: 2},
-		{filename: "input", exp: 803},
-	} {
-		out := partTwo(tc.filename)
-		if tc.exp != out {
-			t.Errorf("%s: expected %d, given %d", tc.filename, tc.exp, out)
-		}
-	}
-}
-
 func TestPartOne(t *testing.T) {
 	for _, tc := range []struct {
 		filename string
 		exp      int
 	}{
-		{filename: "integration-part-1", exp: 114},
-		{filename: "input", exp: 1681758908},
+		{filename: "testdata/integration_part_1", exp: 114},
+		{filename: "testdata/input", exp: 1681758908},
 	} {
-		out := partOne(tc.filename)
-		if tc.exp != out {
+		if out := partOne(tc.filename); tc.exp != out {
+			t.Errorf("%s: expected %d, given %d", tc.filename, tc.exp, out)
+		}
+	}
+}
+
+func TestPartTwo(t *testing.T) {
+	for _, tc := range []struct {
+		filename string
+		exp      int
+	}{
+		{filename: "testdata/integration_part_2", exp: 2},
+		{filename: "testdata/input", exp: 803},
+	} {
+		if out := partTwo(tc.filename); tc.exp != out {
 			t.Errorf("%s: expected %d, given %d", tc.filename, tc.exp, out)
 		}
 	}
@@ -44,8 +42,7 @@ func TestExtrapolateRight(t *testing.T) {
 		{input: []int{1, 3, 6, 10, 15, 21}, exp: 28},
 		{input: []int{10, 13, 16, 21, 30, 45}, exp: 68},
 	} {
-		out := extrapolateRight(tc.input)
-		if tc.exp != out {
+		if out := extrapolateRight(tc.input); tc.exp != out {
 			t.Errorf("%v: expected %d, given %d", tc.input, tc.exp, out)
 		}
 	}
@@ -60,8 +57,7 @@ func TestStep(t *testing.T) {
 		{input: []int{1, 3, 6, 10, 15, 21}, exp: []int{2, 3, 4, 5, 6}},
 		{input: []int{10, 13, 16, 21, 30, 45}, exp: []int{3, 3, 5, 9, 15}},
 	} {
-		out := step(tc.input)
-		if !slices.Equal(tc.exp, out) {
+		if out := step(tc.input); !slices.Equal(tc.exp, out) {
 			t.Errorf("%v: expected %v, given %v", tc.input, tc.exp, out)
 		}
 	}

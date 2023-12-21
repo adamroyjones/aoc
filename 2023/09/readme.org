@@ -4,7 +4,11 @@ This assumes that Go v1.21.5 has been installed.
 
 #+begin_src sh
 go test ./...
-#+end_src>
+#+end_src
+
+** Approach
+This is really about [[https://en.wikipedia.org/wiki/Finite_difference#Newton's_series][Newton's series]], but I did the more obvious thing of
+just... solving the problem?
 
 ** Question
 The question as given is as follows.
