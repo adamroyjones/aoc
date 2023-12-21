@@ -4,7 +4,23 @@ This assumes that Go v1.21.5 has been installed.
 
 #+begin_src sh
 go test ./...
-#+end_src>
+#+end_src
+
+** Approach
+This was where I switched from Janet: I found it too frustrating to keep things
+in a sensible state.
+
+The first part is straightforward. The second part turns on a few observations.
+
+- The lookup functions are essentially patched together collections of
+  translations.
+- A domain interval can be decomposed into disjoint subintervals such that, for
+  each subinterval, each lookup function is just one of the translations from
+  the collection when restricted to that subinterval.
+
+The result can be found by looping over the lookup functions: for each
+iteration, cut the source intervals at these "knot points" and map them under
+the lookup function.
 
 ** Question
 The question as given is as follows.

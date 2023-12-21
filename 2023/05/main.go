@@ -1,35 +1,57 @@
 package main
 
 import (
-	"fmt"
 	"slices"
+)
+
+type data struct {
+	seeds   []int
+	lookups []lookup
+}
+
+type (
+	lookup             struct{ lookupTriples []lookupTriple }
+	lookupTriple       struct{ dst, src, rng int }
+	leftClosedInterval struct{ start, end int }
+	closedInterval     struct{ start, end int }
 )
 
 func partOne(filename string) int {
 	data := parseFile(filename)
 	locations := make([]int, len(data.seeds))
 	for i, seed := range data.seeds {
-		locations[i] = data.lookups.toLocation(seed)
+		location := seed
+		for _, lookup := range data.lookups {
+			location = lookup.next(location)
+		}
+		locations[i] = location
 	}
 	return slices.Min(locations)
 }
 
 func partTwo(filename string) int {
 	data := parseFile(filename)
-	intervals := []leftClosedInterval{}
-	assert(len(data.seeds)%2 == 0, "expected an even number of seeds")
+	assert(len(data.seeds)%2 == 0)
 
 	// Converts the seeds into left-closed intervals.
+	intervals := []leftClosedInterval{}
 	for i := 0; i < len(data.seeds); i += 2 {
 		start := data.seeds[i]
 		end := start + data.seeds[i+1]
 		intervals = append(intervals, leftClosedInterval{start: start, end: end})
 	}
 
+	// For each lookup map:
+	//
+	// - cut the intervals at the knot points (that is, the transitionary points,
+	//   where we switch from mapping one interval to mapping another), and
+	// - take the image of the cut intervals under the lookup map.
+	//
+	// At the end, we can then flatten the intervals and take the minimum.
 	for _, lookup := range data.lookups {
 		nextIntervals := []leftClosedInterval{}
-		for _, intv := range intervals {
-			knots := lookup.intervalToKnots(intv)
+		for _, interval := range intervals {
+			knots := lookup.intervalToKnots(interval)
 			srcClosedIntervals := knotsToClosedIntervals(knots)
 			dstIntervals := make([]leftClosedInterval, len(srcClosedIntervals))
 			for i := range srcClosedIntervals {
@@ -44,26 +66,6 @@ func partTwo(filename string) int {
 	}
 
 	return slices.Min(flatten(intervals))
-}
-
-type data struct {
-	seeds   []int
-	lookups lookups
-}
-
-type (
-	lookups            []lookup
-	lookup             struct{ lookupTriples []lookupTriple }
-	lookupTriple       struct{ dst, src, rng int }
-	leftClosedInterval struct{ start, end int }
-	closedInterval     struct{ start, end int }
-)
-
-func (l lookups) toLocation(x int) int {
-	for _, lookup := range l {
-		x = lookup.next(x)
-	}
-	return x
 }
 
 func (l lookup) next(x int) int {
@@ -112,8 +114,8 @@ func flatten(intervals []leftClosedInterval) []int {
 	return xs
 }
 
-func assert(b bool, msg string, args ...any) {
+func assert(b bool) {
 	if !b {
-		panic("assertion failed: " + fmt.Sprintf(msg, args...))
+		panic("assertion failed")
 	}
 }

@@ -1,7 +1,7 @@
 * 2023
 This directory contains some attempts at solutions to the 2023 Advent of Code
-problems. I chose Janet (v1.32.1) as my language of choice; I later switched to
-Go.
+problems. I chose Janet (v1.32.1) as my language of choice, but I switched to Go
+from day 5.
 
 ** Why Janet?
 I don't yet know the language, but it has some appealing properties.
@@ -25,9 +25,9 @@ I chose to switch to Go, my usual working language, when working on day 5.
 I like the compactness of Janet, I like the left-to-right style that threading
 macros provide, I like being able to place my tests next to my code with [[https://github.com/ianthehenry/judge][judge]],
 and parsing expression grammars are revelatory---but a language's usefulness is
-limited by its tooling and its documentation. These are lacking in Janet, at
-least for now.
+limited by its tooling, its documentation, and its community. These are lacking
+in Janet, at least for now.
 
-I also realise how much I rely on value semantics (maybe Babashka would be a
-better Lisp for my uses?) and how intolerant I am of the kinds of errors that
-dynamic typing produces.
+I also realise how much I prefer value semantics and immutability (maybe
+Babashka would be a better Lisp for my uses?) and how intolerant I am of the
+kinds of errors that dynamic typing produces.

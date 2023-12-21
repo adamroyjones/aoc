@@ -7,12 +7,11 @@ func TestPartOne(t *testing.T) {
 		filename string
 		exp      int
 	}{
-		{filename: "integration-part-1", exp: 35},
-		{filename: "input", exp: 265018614},
+		{filename: "testdata/integration_part_1", exp: 35},
+		{filename: "testdata/input", exp: 265018614},
 	} {
-		solution := partOne(tc.filename)
-		if tc.exp != solution {
-			t.Fatalf("%s: not correct (given: %d, expected: %d)", tc.filename, solution, tc.exp)
+		if out := partOne(tc.filename); tc.exp != out {
+			t.Errorf("%s: expected %d, given %d", tc.filename, tc.exp, out)
 		}
 	}
 }
@@ -22,12 +21,11 @@ func TestPartTwo(t *testing.T) {
 		filename string
 		exp      int
 	}{
-		{filename: "integration-part-2", exp: 46},
-		{filename: "input", exp: 63179500},
+		{filename: "testdata/integration_part_2", exp: 46},
+		{filename: "testdata/input", exp: 63179500},
 	} {
-		solution := partTwo(tc.filename)
-		if tc.exp != solution {
-			t.Fatalf("%s: not correct (given: %d, expected: %d)", tc.filename, solution, tc.exp)
+		if out := partTwo(tc.filename); tc.exp != out {
+			t.Errorf("%s: expected %d, given %d)", tc.filename, tc.exp, out)
 		}
 	}
 }
