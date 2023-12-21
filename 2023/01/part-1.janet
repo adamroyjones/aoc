@@ -1,7 +1,7 @@
 (use judge)
 
 (defn parse-line [line]
-  (def pattern ~{:main (any (+ (<- :d) 1))})
+  (def pattern {:main (any (+ (<- :d) 1))})
   (def digits (peg/match pattern line))
   (scan-number (string (first digits) (last digits))))
 
@@ -12,7 +12,8 @@
 
 (defn solve [filename]
   (with [fd (file/open filename)]
-        (reduce (fn [acc el] (+ acc (parse-line el))) 0 (file/lines fd))))
+        (->> (file/lines fd)
+             (reduce (fn [acc el] (+ acc (parse-line el))) 0))))
 
 (test (solve "integration-part-1") 142)
 (test (solve "input") 54597)

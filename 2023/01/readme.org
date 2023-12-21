@@ -5,9 +5,11 @@ This assumes that Janet v1.32.1 and jpm have been installed.
 #+begin_src sh
 jpm --local deps
 jpm --local test
-jpm --local janet part-1.janet
-jpm --local janet part-2.janet
 #+end_src
+
+** Approach
+This was a first use of parsing expression grammars (PEGs). The grammars are
+particularly trivial: they scan for digits or a number word.
 
 ** Question
 The question as given is as follows.
