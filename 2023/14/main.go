@@ -9,6 +9,7 @@ import (
 )
 
 type (
+	grid      [][]tiletype
 	tiletype  int
 	direction int
 )
@@ -17,54 +18,31 @@ const (
 	TT_EMPTY tiletype = iota
 	TT_ROUND_ROCK
 	TT_CUBIC_ROCK
+)
 
+const (
 	DIRECTION_N direction = iota
 	DIRECTION_W
 	DIRECTION_S
 	DIRECTION_E
 )
 
-func (tt tiletype) String() string {
-	switch tt {
-	case TT_EMPTY:
-		return "."
-	case TT_ROUND_ROCK:
-		return "O"
-	case TT_CUBIC_ROCK:
-		return "#"
-	default:
-		panic("unexpected tile type")
-	}
-}
-
-type grid [][]tiletype
-
-func (g grid) String() string {
-	var sb strings.Builder
-	for _, row := range g {
-		for _, cell := range row {
-			sb.WriteString(cell.String())
-		}
-		sb.WriteString("\n")
-	}
-	return sb.String()
-}
-
-func (xss grid) eq(yss grid) bool {
-	return slices.EqualFunc(xss, yss, func(xs, ys []tiletype) bool { return slices.Equal(xs, ys) })
-}
-
 func main() {
 	// This illustrates the periodic behaviour. This requires an ANSI terminal.
-	filename := "integration-part-2"
+	filename := "testdata/integration_part_2"
 	grid := parseFile(filename)
 	for i := 0; i <= 1000; i++ {
-		fmt.Printf("\033[0;0H")
-		fmt.Println()
+		fmt.Printf("\033[0;0H\n")
 		fmt.Println(grid)
 		grid = cycle(grid)
-		time.Sleep(50 * time.Millisecond)
+		time.Sleep(100 * time.Millisecond)
 	}
+}
+
+func partOne(filename string) int {
+	grid := parseFile(filename)
+	finalGrid := slide(grid, DIRECTION_N)
+	return score(finalGrid)
 }
 
 func partTwo(filename string) int {
@@ -74,30 +52,34 @@ func partTwo(filename string) int {
 	cycleLimit := 1_000_000_000
 	periodStart := 0
 	periodEnd := 0
-CycleLoop:
+Loop:
 	for i := 0; i < cycleLimit; i++ {
 		g = cycle(g)
 		history = append(history, g)
 		for j, gg := range history[:len(history)-1] {
 			if g.eq(gg) {
 				periodStart, periodEnd = j, i+1
-				fmt.Printf("periodStart = %d, periodEnd = %d\n", periodStart, periodEnd)
-				break CycleLoop
+				break Loop
 			}
 		}
 	}
 
 	// Express cycleLimit = periodStart + K(periodEnd-periodStart) + r and then
-	// extract the i + r element from the history.
+	// extract the (periodStart + r)th element from the history.
 	r := (cycleLimit - periodStart) % (periodEnd - periodStart)
 	g = history[periodStart+r]
 	return score(g)
 }
 
-func partOne(filename string) int {
-	grid := parseFile(filename)
-	finalGrid := slide(grid, DIRECTION_N)
-	return score(finalGrid)
+func parseFile(filename string) grid {
+	bs, err := os.ReadFile(filename)
+	assert(err == nil, "unable to read a file")
+	lines := strings.Split(strings.TrimSpace(string(bs)), "\n")
+	grid := make([][]tiletype, len(lines))
+	for i, line := range lines {
+		grid[i] = newGridRow(line)
+	}
+	return grid
 }
 
 func score(g grid) int {
@@ -109,7 +91,7 @@ func score(g grid) int {
 				count++
 			}
 		}
-		s += count * (len(g) - i) // The second factor is: 1, 2, ...
+		s += count * (len(g) - i) // The second factor is 1, 2, ...
 	}
 	return s
 }
@@ -158,32 +140,31 @@ func slideRowEW(row []tiletype, dir direction) []tiletype {
 		return append([]tiletype{TT_CUBIC_ROCK}, slideRowEW(row[1:], dir)...)
 	}
 
-	idx := slices.Index(row, TT_CUBIC_ROCK)
-	if idx == -1 {
-		roundRockCount := 0
-		for _, tt := range row {
-			if tt == TT_ROUND_ROCK {
-				roundRockCount++
-			}
-		}
-		switch dir {
-		case DIRECTION_W:
-			return append(repeat(TT_ROUND_ROCK, roundRockCount), repeat(TT_EMPTY, len(row)-roundRockCount)...)
-		case DIRECTION_E:
-			return append(repeat(TT_EMPTY, len(row)-roundRockCount), repeat(TT_ROUND_ROCK, roundRockCount)...)
-		default:
-			panic("unexpected direction")
-		}
+	if idx := slices.Index(row, TT_CUBIC_ROCK); idx != -1 {
+		return append(slideRowEW(row[:idx], dir), slideRowEW(row[idx:], dir)...)
 	}
 
-	return append(slideRowEW(row[:idx], dir), slideRowEW(row[idx:], dir)...)
+	roundRockCount := 0
+	for _, tt := range row {
+		if tt == TT_ROUND_ROCK {
+			roundRockCount++
+		}
+	}
+	switch dir {
+	case DIRECTION_W:
+		return append(repeat(TT_ROUND_ROCK, roundRockCount), repeat(TT_EMPTY, len(row)-roundRockCount)...)
+	case DIRECTION_E:
+		return append(repeat(TT_EMPTY, len(row)-roundRockCount), repeat(TT_ROUND_ROCK, roundRockCount)...)
+	default:
+		panic("unexpected direction")
+	}
 }
 
 func transpose(g grid) grid {
-	iMax, jMax := dims(g)
-	transposed := make([][]tiletype, jMax)
+	imax, jmax := len(g), len(g[0])
+	transposed := make([][]tiletype, jmax)
 	for i := range transposed {
-		transposed[i] = make([]tiletype, iMax)
+		transposed[i] = make([]tiletype, imax)
 	}
 
 	for i := range g {
@@ -195,32 +176,7 @@ func transpose(g grid) grid {
 	return transposed
 }
 
-func dims(g grid) (int, int) {
-	iMax := len(g)
-	jMax := len(g[0])
-	return iMax, jMax
-}
-
-func repeat[T any](x T, count int) []T {
-	out := make([]T, count)
-	for i := range out {
-		out[i] = x
-	}
-	return out
-}
-
-func parseFile(filename string) grid {
-	bs, err := os.ReadFile(filename)
-	assert(err == nil, "unable to read a file")
-	lines := strings.Split(strings.TrimSpace(string(bs)), "\n")
-	grid := make([][]tiletype, len(lines))
-	for i, line := range lines {
-		grid[i] = lineToGridRow(line)
-	}
-	return grid
-}
-
-func lineToGridRow(line string) []tiletype {
+func newGridRow(line string) []tiletype {
 	out := make([]tiletype, len(line))
 	for i, ru := range line {
 		switch ru {
@@ -237,8 +193,45 @@ func lineToGridRow(line string) []tiletype {
 	return out
 }
 
+func (xss grid) eq(yss grid) bool {
+	fn := func(xs, ys []tiletype) bool { return slices.Equal(xs, ys) }
+	return slices.EqualFunc(xss, yss, fn)
+}
+
+func repeat[T any](x T, count int) []T {
+	out := make([]T, count)
+	for i := range out {
+		out[i] = x
+	}
+	return out
+}
+
 func assert(b bool, msg string, args ...any) {
 	if !b {
 		panic("assertion failed: " + fmt.Sprintf(msg, args...))
+	}
+}
+
+func (g grid) String() string {
+	var sb strings.Builder
+	for _, row := range g {
+		for _, tt := range row {
+			sb.WriteString(tt.String())
+		}
+		sb.WriteString("\n")
+	}
+	return sb.String()
+}
+
+func (tt tiletype) String() string {
+	switch tt {
+	case TT_EMPTY:
+		return "."
+	case TT_ROUND_ROCK:
+		return "O"
+	case TT_CUBIC_ROCK:
+		return "#"
+	default:
+		panic("unexpected tile type")
 	}
 }

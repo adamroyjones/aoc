@@ -4,7 +4,14 @@ This assumes that Go v1.21.5 has been installed.
 
 #+begin_src sh
 go test ./...
-#+end_src>
+#+end_src
+
+** Approach
+This is again mostly self-evident. The two tricks are (optionally) noticing that
+the north-south behaviour can be defined in terms of the east-west behaviour and
+transpositions and (necessarily) noticing that, in part two, the system is
+periodic. The periodicity means that the eventual state of the system can be
+determined quickly.
 
 ** Question
 The question as given is as follows.
