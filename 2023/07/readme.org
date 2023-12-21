@@ -4,7 +4,11 @@ This assumes that Go v1.21.5 has been installed.
 
 #+begin_src sh
 go test ./...
-#+end_src>
+#+end_src
+
+** Approach
+There's not too much to note. This was made rather a lot easier by defining
+comparison functions on new types.
 
 ** Question
 The question as given is as follows.

@@ -2,7 +2,6 @@ package main
 
 import (
 	"cmp"
-	"fmt"
 	"os"
 	"slices"
 	"strconv"
@@ -50,8 +49,9 @@ func (fst card) cmp(snd card, partOne bool) int {
 	return cmp.Compare(slices.Index(orderPartTwo, snd), slices.Index(orderPartTwo, fst))
 }
 
-func main() {
-	partTwo("input")
+func partOne(filename string) int {
+	partOne := true
+	return run(filename, partOne)
 }
 
 func partTwo(filename string) int {
@@ -59,16 +59,11 @@ func partTwo(filename string) int {
 	return run(filename, partOne)
 }
 
-func partOne(filename string) int {
-	partOne := true
-	return run(filename, partOne)
-}
-
 func run(filename string, partOne bool) int {
-	rs := parseFile(filename, partOne)
-	slices.SortFunc(rs, func(fst, snd record) int { return fst.cmp(snd, partOne) })
+	records := parseFile(filename, partOne)
+	slices.SortFunc(records, func(fst, snd record) int { return fst.cmp(snd, partOne) })
 	result := 0
-	for i, r := range rs {
+	for i, r := range records {
 		result += (i + 1) * r.bid
 	}
 	return result
@@ -76,7 +71,7 @@ func run(filename string, partOne bool) int {
 
 func parseFile(filepath string, partOne bool) []record {
 	bs, err := os.ReadFile(filepath)
-	assert(err == nil, "unable to read file")
+	assert(err == nil)
 
 	rows := strings.Split(strings.TrimSpace(string(bs)), "\n")
 	records := make([]record, len(rows))
@@ -88,12 +83,15 @@ func parseFile(filepath string, partOne bool) []record {
 
 func rowToRecord(row string, partOne bool) record {
 	fields := strings.Fields(row)
-	assert(len(fields) == 2, "expected 2 fields (row: %s)", row)
+	assert(len(fields) == 2)
+
 	cardsJoinedStr, bidStr := fields[0], fields[1]
 	bid, err := strconv.Atoi(bidStr)
-	assert(err == nil, "unable to parse int")
+	assert(err == nil)
+
 	cardsStrs := strings.Split(cardsJoinedStr, "")
-	assert(len(cardsStrs) == 5, "expected 5 cards in a hand")
+	assert(len(cardsStrs) == 5)
+
 	cards := make([]card, len(cardsStrs))
 	for i := range cardsStrs {
 		cards[i] = card(cardsStrs[i])
@@ -103,33 +101,63 @@ func rowToRecord(row string, partOne bool) record {
 }
 
 func cardsToRank(cs []card, partOne bool) int {
-	counts := make(map[card]int)
+	cardToCount := make(map[card]int)
 	for _, c := range cs {
-		counts[c] = counts[c] + 1
+		cardToCount[c] = cardToCount[c] + 1
 	}
 
 	if partOne {
-		return cardsToRankPartOne(counts)
+		return cardsToRankPartOne(cardToCount)
 	}
-	return cardsToRankPartTwo(counts)
+	return cardsToRankPartTwo(cardToCount)
 }
 
-func cardsToRankPartTwo(counts map[card]int) int {
-	jokerCount := counts[card("J")]
-	if jokerCount == 0 {
-		return cardsToRankPartOne(counts)
+func cardsToRankPartOne(cardToCount map[card]int) int {
+	cardCountToCount := make(map[int]int)
+	for _, count := range cardToCount {
+		cardCountToCount[count] = cardCountToCount[count] + 1
 	}
-	if jokerCount == 5 { // To avoid slices.Max of an empty slice.
+
+	switch maxcnt := slices.Max(maps.Keys(cardCountToCount)); maxcnt {
+	case 5:
+		return 7
+	case 4:
+		return 6
+	case 3:
+		if _, ok := cardCountToCount[2]; ok {
+			return 5 // Full house.
+		}
+		return 4
+	case 2:
+		if count := cardCountToCount[2]; count == 2 {
+			return 3 // Two-pair.
+		}
+		return 2
+	case 1:
+		return 1
+	default:
+		panic("unexpected value")
+	}
+}
+
+func cardsToRankPartTwo(cardToCount map[card]int) int {
+	jokerCount := cardToCount[card("J")]
+	if jokerCount == 0 {
+		return cardsToRankPartOne(cardToCount)
+	}
+	// This ensures we avoid calling slices.Max on an empty slice.
+	if jokerCount == 5 {
 		return 7
 	}
 
-	delete(counts, card("J"))
-	countOfCounts := make(map[int]int)
-	for _, count := range counts {
-		countOfCounts[count] = countOfCounts[count] + 1
+	delete(cardToCount, card("J"))
+	cardCountToCounts := make(map[int]int)
+	for _, count := range cardToCount {
+		cardCountToCounts[count] = cardCountToCounts[count] + 1
 	}
 
-	maxcnt := slices.Max(maps.Keys(countOfCounts))
+	maxcnt := slices.Max(maps.Keys(cardCountToCounts))
+	// jokerCount is never zero given the special handling at the top.
 	switch maxcnt + jokerCount {
 	case 5:
 		return 7
@@ -137,13 +165,8 @@ func cardsToRankPartTwo(counts map[card]int) int {
 		return 6
 	case 3:
 		switch maxcnt {
-		case 3: // jokerCount must be zero.
-			if _, ok := countOfCounts[2]; ok {
-				return 5 // Full house.
-			}
-			return 4
 		case 2:
-			if count := countOfCounts[2]; count == 2 {
+			if count := cardCountToCounts[2]; count == 2 {
 				return 5 // Full house.
 			}
 			return 4
@@ -154,11 +177,6 @@ func cardsToRankPartTwo(counts map[card]int) int {
 		}
 	case 2:
 		switch maxcnt {
-		case 2:
-			if count := countOfCounts[2]; count == 2 {
-				return 3
-			}
-			return 2
 		case 1:
 			return 2
 		default:
@@ -169,38 +187,10 @@ func cardsToRankPartTwo(counts map[card]int) int {
 	default:
 		panic("unreachable")
 	}
-
-	panic("unreachable")
 }
 
-func cardsToRankPartOne(counts map[card]int) int {
-	countOfCounts := make(map[int]int)
-	for _, count := range counts {
-		countOfCounts[count] = countOfCounts[count] + 1
-	}
-
-	switch maxcnt := slices.Max(maps.Keys(countOfCounts)); maxcnt {
-	case 5, 4:
-		return maxcnt + 2
-	case 3:
-		if _, ok := countOfCounts[2]; ok {
-			return 5 // full house
-		}
-		return 4
-	case 2:
-		if count := countOfCounts[2]; count == 2 {
-			return 3 // two pair
-		}
-		return 2
-	case 1:
-		return 1
-	default:
-		panic("unexpected value")
-	}
-}
-
-func assert(b bool, msg string, args ...any) {
+func assert(b bool) {
 	if !b {
-		panic("assertion failed: " + fmt.Sprintf(msg, args...))
+		panic("assertion failed")
 	}
 }
