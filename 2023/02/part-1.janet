@@ -11,10 +11,7 @@
        (every?)))
 
 (defn game-possible? [str]
-  (->> str
-       (string/split ";")
-       (map round-possible?)
-       (every?)))
+  (->> str (string/split ";") (map round-possible?) (every?)))
 
 (test (game-possible? "3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green") true)
 (test (game-possible? "1 blue, 2 green; 3 green, 4 blue, 1 red; 1 green, 1 blue") true)
@@ -28,8 +25,8 @@
 
 (defn solve [filename]
   (defn reducer [acc el]
-    (def [id possible?] (parse-line el))
-    (if possible? (+ acc id) acc))
+    (def [id possible] (parse-line el))
+    (if possible (+ acc id) acc))
 
   (with [fd (file/open filename)]
         (reduce reducer 0 (file/lines fd))))

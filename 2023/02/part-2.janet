@@ -3,18 +3,16 @@
 (def constraints {:red 12 :green 13 :blue 14})
 
 (defn min-constraint [rounds]
-  (def min-hash @{:red 0 :green 0 :blue 0})
+  (def h @{:red 0 :green 0 :blue 0})
   (each round rounds
     (each pair round
       (def [count colour] pair)
-      (put min-hash colour (max (min-hash colour) count))))
-  min-hash)
+      (put h colour (max (h colour) count))))
+  h)
 
 (defn parse-round [str]
   (def pattern ~{:main (* :s* (/ (<- :d*) ,scan-number) :s* (/ (<- :a*) ,keyword))})
-  (->> str
-       (string/split ",")
-       (map (fn [round] (peg/match pattern round)))))
+  (->> str (string/split ",") (map |(peg/match pattern $))))
 
 (defn power [str]
   (->> str
