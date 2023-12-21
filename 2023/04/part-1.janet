@@ -1,11 +1,11 @@
 (use judge)
 
-(defn array-to-table [xs] (reduce (fn [tbl x] (put tbl x true)) @{} xs))
+(defn set/new [xs] (reduce (fn [tbl x] (put tbl x true)) @{} xs))
 
-(test (array-to-table []) @{})
-(test (array-to-table [1]) @{1 true})
-(test (array-to-table [1 2]) @{1 true 2 true})
-(test (array-to-table [1 1]) @{1 true})
+(test (set/new []) @{})
+(test (set/new [1]) @{1 true})
+(test (set/new [1 2]) @{1 true 2 true})
+(test (set/new [1 1]) @{1 true})
 
 (defn parse-line [line]
   (def pattern ~{:game (* "Card" :s* :d* ":")
@@ -18,10 +18,10 @@
 
 (defn score [parsed-line]
   (assert (= (length parsed-line) 2))
-  (def winning (array-to-table (parsed-line 0)))
-  (def ticket-numbers (parsed-line 1))
-  (def count (reduce (fn [acc ticket-number] (if (nil? (get winning ticket-number)) acc (inc acc))) 0 ticket-numbers))
-  (if (zero? count) 0 (math/exp2 (dec count))))
+  (def winning-numbers (set/new (first parsed-line)))
+  (def ticket-numbers (last parsed-line))
+  (def matches (count |(not (nil? (get winning-numbers $))) ticket-numbers))
+  (if (zero? matches) 0 (math/exp2 (dec matches))))
 
 (defn solve [filename]
   (->> filename

@@ -5,9 +5,12 @@ This assumes that Janet v1.32.1 and jpm have been installed.
 #+begin_src sh
 jpm --local deps
 jpm --local test
-jpm --local janet part-1.janet
-jpm --local janet part-2.janet
 #+end_src
+
+** Approach
+Again, my approach has little to it. The state reduction in part 2 is a little
+ugly and would benefit strongly from rigid types; it's a little hard to read as
+it stands.
 
 ** Question
 The question as given is as follows.
