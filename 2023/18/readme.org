@@ -7,12 +7,7 @@ go test ./...
 #+end_src>
 
 ** Approach
-Part one adapts the trivial form of Fubini's theorem that I used in part 10.
-This amounts to calculating areas on horizontal slices and summing those areas.
-The area of a horizontal slice is calculated using a crossing and parity
-argument: we start on the left on the outside of the path; we move to the
-right. We transition to the inside if and only if we cross the boundary. It's a
-bit like a (similarly trivial) form of the Jordan curve theorem.
+Part one adapts the trivial form of Fubini's theorem that I used in [[../10/readme.org][part 10]].
 
 For part two, the previous approach is intractable as there are far too many
 slices. I instead switched to constructing a quadrangulation of the region

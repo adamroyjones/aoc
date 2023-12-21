@@ -10,14 +10,16 @@ go test ./...
 The first part essentially records the walking distances when going off in both
 directions from the start, unfurls them into vectors, and takes their maximin.
 
-The second uses a trivial kind of Fubini's theorem to calculate the area: we
-calculate the area along each horizontal slice and sum the areas. A crossing
-argument is used to calculate the sectional area. We start from the left,
-outside of the bounded region, and move to the right. When we cross the
-boundary, we move from the outside to the inside and we can start counting
-tiles; when we cross again, we stop; etc.
+the second uses a trivial kind of fubini's theorem to calculate the area: i
+calculate the area along each horizontal slice and sum the areas. a crossing and
+parity argument is used to calculate the sectional area. we start from the left,
+outside of the bounded region, and move to the right. we transition from the
+inside to the outside, or from the outside to the inside, if and only if we
+cross the boundary. the boundary. when we are on the inside, we count tiles;
+otherwise, we don't. it's a bit like a (similarly trivial) form of the jordan
+curve theorem.
 
-The only wrinkle is what it means to cross the boundary.
+the only wrinkle is what it means to cross the boundary.
 
 ** Question
 The question as given is as follows.
