@@ -6,6 +6,13 @@ This assumes that Go v1.21.5 has been installed.
 go test ./...
 #+end_src
 
+You can also see a little animation by running the following from a cleared
+ANSI terminal.
+
+#+begin_src sh
+go run .
+#+end_src
+
 ** Approach
 This is again mostly self-evident. The two tricks are (optionally) noticing that
 the north-south behaviour can be defined in terms of the east-west behaviour and
