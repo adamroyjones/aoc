@@ -4,7 +4,42 @@ This assumes that Go v1.21.5 has been installed.
 
 #+begin_src sh
 go test ./...
-#+end_src>
+#+end_src
+
+** Approach
+The approach I took relies on a recursion with a cache. We start with strings like
+
+#+begin_src
+.?#?..??.??.???#?? 3,1,2,6
+#+end_src
+
+The # refers to a filled-in site and ? refers to an optionally filled-in
+site. The counts refer to contiguous runs of filled-in sites. For example,
+
+#+begin_src
+.###...#.##.###### 3,1,2,6
+.###..#..##.###### 3,1,2,6
+#+end_src
+
+are the valid ways of choosing filled-in sites.
+
+We can observe that dots are only relevant insofar as they break up contiguous
+sequences. We can therefore stop looking at
+
+#+begin_src
+.?#?..??.??.???#??
+#+end_src
+
+and start looking at
+
+#+begin_src
+[?#?, ??, ??, ???#??]
+#+end_src
+
+and then recursively address the problem by starting with the first chunk and
+the first character in the first chunk, counting admissible patterns.
+
+It turns out that this requires the use of a cache in order to finish quickly.
 
 ** Question
 The question as given is as follows.
