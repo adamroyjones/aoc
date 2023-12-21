@@ -1,34 +1,30 @@
 package main
 
-import (
-	"testing"
-)
-
-func TestPartTwo(t *testing.T) {
-	for _, tc := range []struct {
-		filename string
-		exp      int
-	}{
-		{filename: "integration-part-2", exp: 400},
-		{filename: "input", exp: 30842},
-	} {
-		out := partTwo(tc.filename)
-		if tc.exp != out {
-			t.Errorf("%s: expected %d, given %d", tc.filename, tc.exp, out)
-		}
-	}
-}
+import "testing"
 
 func TestPartOne(t *testing.T) {
 	for _, tc := range []struct {
 		filename string
 		exp      int
 	}{
-		{filename: "integration-part-1", exp: 405},
-		{filename: "input", exp: 41859},
+		{filename: "testdata/integration_part_1", exp: 405},
+		{filename: "testdata/input", exp: 41859},
 	} {
-		out := partOne(tc.filename)
-		if tc.exp != out {
+		if out := partOne(tc.filename); tc.exp != out {
+			t.Errorf("%s: expected %d, given %d", tc.filename, tc.exp, out)
+		}
+	}
+}
+
+func TestPartTwo(t *testing.T) {
+	for _, tc := range []struct {
+		filename string
+		exp      int
+	}{
+		{filename: "testdata/integration_part_2", exp: 400},
+		{filename: "testdata/input", exp: 30842},
+	} {
+		if out := partTwo(tc.filename); tc.exp != out {
 			t.Errorf("%s: expected %d, given %d", tc.filename, tc.exp, out)
 		}
 	}
@@ -45,13 +41,13 @@ func TestHorizontalIndex(t *testing.T) {
 #.#.##.#.
 `
 
-	blockOne := toBlock(patternOne)
+	blockOne := newBlock(patternOne)
 	d, ok := blockOne.horizontalIndex()
 	if ok {
-		t.Errorf("first block: expected !ok")
+		t.Fatalf("first block: expected !ok")
 	}
 	if d != 0 {
-		t.Errorf("first block: expected 0, given %d", d)
+		t.Fatalf("first block: expected 0, given %d", d)
 	}
 
 	patternTwo := `
@@ -64,13 +60,13 @@ func TestHorizontalIndex(t *testing.T) {
 #....#..#
 `
 
-	blockTwo := toBlock(patternTwo)
+	blockTwo := newBlock(patternTwo)
 	d, ok = blockTwo.horizontalIndex()
 	if !ok {
-		t.Errorf("second block: expected ok")
+		t.Fatalf("second block: expected ok")
 	}
 	if d != 3 {
-		t.Errorf("second block: expected 0, given %d", d)
+		t.Fatalf("second block: expected 0, given %d", d)
 	}
 }
 
@@ -85,13 +81,13 @@ func TestVerticalIndex(t *testing.T) {
 #.#.##.#.
 `
 
-	blockOne := toBlock(patternOne)
+	blockOne := newBlock(patternOne)
 	d, ok := blockOne.verticalIndex()
 	if !ok {
-		t.Errorf("first block: expected ok")
+		t.Fatalf("first block: expected ok")
 	}
 	if d != 4 {
-		t.Errorf("first block: expected 4, given %d", d)
+		t.Fatalf("first block: expected 4, given %d", d)
 	}
 
 	patternTwo := `
@@ -104,12 +100,12 @@ func TestVerticalIndex(t *testing.T) {
 #....#..#
 `
 
-	blockTwo := toBlock(patternTwo)
+	blockTwo := newBlock(patternTwo)
 	d, ok = blockTwo.verticalIndex()
 	if ok {
-		t.Errorf("second block: expected !ok")
+		t.Fatalf("second block: expected !ok")
 	}
 	if d != 0 {
-		t.Errorf("second block: expected 0, given %d", d)
+		t.Fatalf("second block: expected 0, given %d", d)
 	}
 }
