@@ -4,7 +4,11 @@ This assumes that Go v1.21.5 has been installed.
 
 #+begin_src sh
 go test ./...
-#+end_src>
+#+end_src
+
+** Approach
+There's not much to remark upon here: in part two, expansion can't be done by
+creating a literal grid.
 
 ** Question
 The question as given is as follows.
