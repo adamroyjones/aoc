@@ -4,7 +4,11 @@ This assumes that Go v1.21.5 has been installed.
 
 #+begin_src sh
 go test ./...
-#+end_src>
+#+end_src
+
+** Approach
+My approaches uses the periodic behaviour in part two to calculate the minimal
+'coincident' period. That's all!
 
 ** Question
 The question as given is as follows.

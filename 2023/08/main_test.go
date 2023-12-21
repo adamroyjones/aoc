@@ -7,12 +7,11 @@ func TestPartOne(t *testing.T) {
 		filename string
 		exp      int
 	}{
-		{filename: "integration-part-1.1", exp: 2},
-		{filename: "integration-part-1.2", exp: 6},
-		{filename: "input", exp: 12361},
+		{filename: "testdata/integration_part_1.1", exp: 2},
+		{filename: "testdata/integration_part_1.2", exp: 6},
+		{filename: "testdata/input", exp: 12361},
 	} {
-		out := partOne(tc.filename)
-		if tc.exp != out {
+		if out := partOne(tc.filename); tc.exp != out {
 			t.Errorf("%s: expected %d, given %d", tc.filename, tc.exp, out)
 		}
 	}
@@ -23,11 +22,10 @@ func TestPartTwo(t *testing.T) {
 		filename string
 		exp      int
 	}{
-		{filename: "integration-part-2", exp: 6},
-		{filename: "input", exp: 18215611419223},
+		{filename: "testdata/integration_part_2", exp: 6},
+		{filename: "testdata/input", exp: 18215611419223},
 	} {
-		out := partTwo(tc.filename)
-		if tc.exp != out {
+		if out := partTwo(tc.filename); tc.exp != out {
 			t.Errorf("%s: expected %d, given %d", tc.filename, tc.exp, out)
 		}
 	}
@@ -35,22 +33,19 @@ func TestPartTwo(t *testing.T) {
 
 func TestGCD(t *testing.T) {
 	for _, tc := range []struct {
-		xs  []int
-		exp int
+		x, y int
+		exp  int
 	}{
-		{xs: []int{1}, exp: 1},
-		{xs: []int{1, 2}, exp: 1},
-		{xs: []int{2, 2}, exp: 2},
-		{xs: []int{2, 4}, exp: 2},
-		{xs: []int{2, 3}, exp: 1},
-		{xs: []int{4, 6}, exp: 2},
-		{xs: []int{4, 6, 5}, exp: 1},
-		{xs: []int{4, 6, 10}, exp: 2},
-		{xs: []int{12, 6, 30}, exp: 6},
+		{x: 1, y: 2, exp: 1},
+		{x: 2, y: 2, exp: 2},
+		{x: 2, y: 4, exp: 2},
+		{x: 2, y: 3, exp: 1},
+		{x: 4, y: 6, exp: 2},
+		{x: 4, y: 5, exp: 1},
+		{x: 12, y: 30, exp: 6},
 	} {
-		out := gcd(tc.xs)
-		if tc.exp != out {
-			t.Errorf("%v: expected %d, given %d", tc.xs, tc.exp, out)
+		if out := gcd(tc.x, tc.y); tc.exp != out {
+			t.Errorf("%d, %d: expected %d, given %d", tc.x, tc.y, tc.exp, out)
 		}
 	}
 }
@@ -68,8 +63,7 @@ func TestLCM(t *testing.T) {
 		{xs: []int{4, 6}, exp: 12},
 		{xs: []int{4, 6, 5}, exp: 60},
 	} {
-		out := lcm(tc.xs)
-		if tc.exp != out {
+		if out := lcm(tc.xs); tc.exp != out {
 			t.Errorf("%v: expected %d, given %d", tc.xs, tc.exp, out)
 		}
 	}
