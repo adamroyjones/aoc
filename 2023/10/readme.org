@@ -10,16 +10,20 @@ go test ./...
 The first part essentially records the walking distances when going off in both
 directions from the start, unfurls them into vectors, and takes their maximin.
 
-the second uses a trivial kind of fubini's theorem to calculate the area: i
-calculate the area along each horizontal slice and sum the areas. a crossing and
-parity argument is used to calculate the sectional area. we start from the left,
-outside of the bounded region, and move to the right. we transition from the
-inside to the outside, or from the outside to the inside, if and only if we
-cross the boundary. the boundary. when we are on the inside, we count tiles;
-otherwise, we don't. it's a bit like a (similarly trivial) form of the jordan
-curve theorem.
+The second uses a trivial form of Fubini's theorem to calculate the area. That
+is, the approach calculates the sectional area of each horizontal slice and sums
+those areas. A crossing and parity argument is used to calculate the sectional
+area. A walker starts from the left, outside of the bounded region, and moves to
+the right. The walker transitions from the inside to the outside, or from the
+outside to the inside, if and only if it crosses the boundary. When the walker
+is on the inside, tiles are counted, and otherwise they are not. It's a bit like
+(a similarly trivial form of) the Jordan curve theorem.
 
-the only wrinkle is what it means to cross the boundary.
+The only wrinkle is what it means to cross the boundary. This amounts to
+defining what it means for a horizontal section of pipe to be 'equivalent' to a
+single vertical pipe. As that phrasing suggests, that in turn amounts to whether
+it exits and enters on opposite horizontal sides. For example, =╰╮= and =╭╯= are
+equivalent in this sense, while =╭╮= and =╰╯= are not.
 
 ** Question
 The question as given is as follows.
